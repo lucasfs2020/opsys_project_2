@@ -7,9 +7,20 @@ Created on Fri Apr 19 17:12:46 2019
 import memory_process
 import sys
 
+def print_table(table, frames_pl, total_f):
+    lines = int(total_f/frames_pl)
+    
+    print("="*frames_pl)
+    
+    for i in range(lines):
+        for j in range(frames_pl):
+            print(table[i][j], end = "")
+        print()
+    print("="*frames_pl)
+
 if __name__ == '__main__':
     fpl = int(sys.argv[1])
-    
+    tf = int(sys.argv[2])
     file_name = sys.argv[3]
     
     file = open(file_name, "r")
@@ -38,6 +49,15 @@ if __name__ == '__main__':
             new_process = memory_process.Memory_Process(pid, pmem, at1, rt1, None, None)
             memory_process_arr.append(new_process)
         
+    lines = int(tf/fpl)
+    
+    print(lines)
+    
+    memory_table = ['.'*fpl]*lines
+    
+    #print(memory_table)
+    
+    print_table(memory_table, fpl, tf)
     
     for proc in memory_process_arr:
         proc.print_vals()
