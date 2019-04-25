@@ -16,7 +16,7 @@ def print_table(table, frames_pl, total_f):
     
     for i in range(lines):
         for j in range(frames_pl):
-            print(table[i][j], end = "")
+            print(table[i*frames_pl+j], end = "")
         print()
     print("="*frames_pl)
 
@@ -54,8 +54,10 @@ if __name__ == '__main__':
     lines = int(tf/fpl)
     print(lines)
         
-    memory_table = np.chararray((lines, fpl), unicode = True)
+    memory_table = np.chararray((tf), unicode = True)
     memory_table[:] = "."
+    
+    print(memory_table.shape)
     
     print(memory_table[0][0])
     
@@ -73,7 +75,7 @@ if __name__ == '__main__':
     print(end[0])
     print(end[1])
     
-    memory_table[0, start[1]:end[1]] = "A"
+    #memory_table[0, start[1]:end[1]] = "A"
     
     print_table(memory_table, fpl, tf)
     
