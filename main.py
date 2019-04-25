@@ -5,7 +5,9 @@ Created on Fri Apr 19 17:12:46 2019
 @author: standl
 """
 import memory_process
+import next_fit as nf
 import sys
+import numpy as np
 
 def print_table(table, frames_pl, total_f):
     lines = int(total_f/frames_pl)
@@ -50,14 +52,29 @@ if __name__ == '__main__':
             memory_process_arr.append(new_process)
         
     lines = int(tf/fpl)
-    
     print(lines)
+        
+    memory_table = np.chararray((lines, fpl), unicode = True)
+    memory_table[:] = "."
     
-    memory_table = ['.'*fpl]*lines
+    print(memory_table[0][0])
     
-    #print(memory_table)
+    print(memory_table)
     
     print_table(memory_table, fpl, tf)
     
     for proc in memory_process_arr:
         proc.print_vals()
+    
+    start, end = nf.check_free(memory_table, "A", 28)
+    
+    print(start[0])
+    print(start[1])
+    print(end[0])
+    print(end[1])
+    
+    memory_table[0, start[1]:end[1]] = "A"
+    
+    print_table(memory_table, fpl, tf)
+    
+    print(start, end)
