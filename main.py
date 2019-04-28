@@ -92,11 +92,17 @@ if __name__ == '__main__':
     #test_defrag[15:20] = "B"
     #test_defrag[27:30] = "C"
     
+    #running = [["B", 300, 15, 20], ["A", 200, 0, 13], ["C", 100, 27, 30]]
+    
     #print(test_defrag)
     
-    #print(ff.defrag(test_defrag))
+    #defragged = ff.defrag(test_defrag)[0]
     
-    ff.run_ff(first_memory_table, memory_process_arr, fpl, tf, tmm)
+    #print(defragged)
+    
+    #print(ff.reset_run(defragged, running, 0, 50))
+    
+    ff.run_ff(first_memory_table, memory_process_arr, fpl, tf, time_mem_move)
     
     #memory_table[start:end] = "A"
     
