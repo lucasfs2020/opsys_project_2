@@ -61,7 +61,7 @@ def mem_sec(memory_table):
                 current_letter = memory_table[i]
                 section_on = 1
             elif (memory_table[i] != current_letter):
-                print("here")
+                #print("here")
                 if section_on == 1:
                     end = i
                     sections.append([current_letter, start, end])
@@ -75,13 +75,25 @@ def mem_sec(memory_table):
                 current_letter = ""
     return sections
 
+def frame_calc(old_table, new_table):
+    old_sec = mem_sec(old_table)
+    new_sec = mem_sec(new_table)
+    
+    frames_moved = 0
+    
+    for i in range(len(old_sec)):
+        if old_sec[i][1] != new_sec[i][1]:
+            frames_moved += old_sec[i][2]-old_sec[i][1]
+            
+    return frames_moved + 1
+    
 def defrag(memory_table):
     sections = mem_sec(memory_table)
     frames = 0
     sections[0][1] -= sections[0][1]
     sections[0][2] = sections[0][2] - sections[0][1]
-    total_difference = sections[0][1]
-    frames += total_difference
+    difference = sections[0][2] - sections[0][1]
+    #print(difference)
     #print(sections)
     #print(len(sections))
     if len(sections) > 1:
@@ -91,10 +103,6 @@ def defrag(memory_table):
             difference = current_start - prior_end
             sections[i][1] -= difference
             sections[i][2] -= difference
-            new_start = sections[i][1]
-            print(current_start)
-            print(new_start+1)
-            frames += current_start - new_start+1
     
     new_table = np.chararray((len(memory_table)), unicode = True)
     new_table[:] = "."    
@@ -102,7 +110,10 @@ def defrag(memory_table):
         letter = sections[i][0]
         start = sections[i][1]
         end = sections[i][2]
+        frames += (end-start)
         new_table[start:end+1] = letter
+    
+    frames = frame_calc(memory_table, new_table)
     
     return new_table, frames
 
@@ -139,15 +150,15 @@ def print_table(table, frames_pl, total_f):
 
 def reset_run(memory, run_procs, time, time_diff):
     new_t = mem_sec(memory)
-    print(new_t)
+    #print(new_t)
     for proc in run_procs:
         for new_proc in new_t:
             name = new_proc[0]
             start = new_proc[1]
             end = new_proc[2]
             if name == proc[0].pid:
-                proc[1] += time_diff
-                proc[2] = start
+                proc[0].end_time += time_diff
+                proc[1] = start
                 proc[2] = end
     
     return run_procs
@@ -173,9 +184,7 @@ def run_ff(memory, mem_proc_arr, fpl, tf, tmm):
     time = 0
     
     print("time 0ms: simulator started ()")
-    
-    true_break = 0
-    
+        
     while (mem_proc_arr):
         current_arrival = find_arrivals(mem_proc_arr, time)
         
@@ -185,15 +194,15 @@ def run_ff(memory, mem_proc_arr, fpl, tf, tmm):
         if running:
             marked = []
             for run_proc in running:
-                if run_proc[1] == time:
+                if run_proc[0].end_time == time:
                     marked.append(run_proc)
             
             for mark in marked:
                 print("time %dms: Process %s removed" % (time, mark[0].pid))
-                memory[mark[2]:mark[3]+1] = "."
+                memory[mark[1]:mark[2]+1] = "."
                 #print(memory)
                 print_table(memory, fpl, tf)
-                print(mark[0].runs)
+                #print(mark[0].runs)
                 running.remove(mark)
                 if mark[0].runs == 1 and mark[0].second_run == 0:
                     #print(mark[0])
@@ -204,8 +213,8 @@ def run_ff(memory, mem_proc_arr, fpl, tf, tmm):
                     
         if (current_arrival != 0):
             for i in range(len(current_arrival)):
-                if current_arrival[i].runs == 1:
-                    print(current_arrival[i].pid)
+                #if current_arrival[i].runs == 1:
+                    #print(current_arrival[i].pid)
                 
                 start, end, total_free, fit = check_free(memory, current_arrival[i].pid, current_arrival[i].p_mem)
                 
@@ -213,29 +222,30 @@ def run_ff(memory, mem_proc_arr, fpl, tf, tmm):
                 if fit == 1:
                     current_arrival[i].runs += 1
                     print("time %dms: Placed process %s"%(time, current_arrival[i].pid))
-                    if current_arrival[0].pid == "A":
-                        print(start, end)
+                    #if current_arrival[0].pid == "A":
+                        #print(start, end)
                     memory[start:end+1] = current_arrival[i].pid
                     print_table(memory, fpl, tf)
                     end_time = 0
                     if current_arrival[i].runs == 1:
-                        end_time = current_arrival[i].arrival_time_1+current_arrival[i].run_time_1
+                        print(current_arrival[i].pid)
+                        print(current_arrival[i].arrival_time_1)
+                        print(current_arrival[i].run_time_1)
+                        current_arrival[i].end_time = current_arrival[i].arrival_time_1+current_arrival[i].run_time_1
                     elif current_arrival[i].runs == 2:
-                        end_time = current_arrival[i].arrival_time_2+current_arrival[i].run_time_2
-                    running.append([current_arrival[i], end_time, start, end])
+                        current_arrival[i].end_time = current_arrival[i].arrival_time_2+current_arrival[i].run_time_2
+                    running.append([current_arrival[i], start, end])
                 elif total_free > current_arrival[i].p_mem:
-                    print("Here at time %d\n"%time)
+                    #print("Here at time %d\n"%time)
+                    print("Cannot place, beginning defragmentation")
                     memory, frames = defrag(memory)
                     print(frames)
                     time_loss = frames*tmm
                     time += time_loss
+                    print("time: %d, placed process"%time)
                     running = reset_run(memory, running, time, time_loss)
                     mem_proc_arr = update_time(mem_proc_arr, time_loss, time)
                     start, end, total_free, fit = check_free(memory, current_arrival[i].pid, current_arrival[i].p_mem)
-                    #print(memory)
-                    #print(running)
-                    print(start)
-                    print(end)
                     memory[start:end+1] = current_arrival[i].pid
                     if current_arrival[i].runs == 1:
                         end_time = current_arrival[i].arrival_time_1+current_arrival[i].run_time_1
@@ -243,9 +253,7 @@ def run_ff(memory, mem_proc_arr, fpl, tf, tmm):
                         end_time = current_arrival[i].arrival_time_2+current_arrival[i].run_time_2
                     running.append([current_arrival[i], end_time, start, end])
                     print_table(memory, fpl, tf)
-                    print(time)
-                    true_break = 1
-                    break
+                    #print(time)
                     
                 elif total_free < current_arrival[i].p_mem:
                     print("time %dms: Cannot place process %s -- skipped!" % (time, current_arrival[i].pid))
@@ -254,11 +262,11 @@ def run_ff(memory, mem_proc_arr, fpl, tf, tmm):
                         mem_proc_arr.remove(current_arrival[i])
                     elif current_arrival[i].runs == 2 and current_arrival[i].second_run == 1:
                         mem_proc_arr.remove(current_arrival[i])
-                
-        if true_break:
-            break
+
         if mem_proc_arr:
             time += 1
-    
+        if time == 2815:
+            for proc in mem_proc_arr:
+                print(proc.pid)
     print("time %dms: Simulator ended (Contiguous -- First-Fit)"% time)
     

@@ -15,6 +15,7 @@ class Memory_Process:
         self.run_time_2 = run_time_2
         self.runs = 0
         self.second_run = second_run
+        self.end_time = 0
         
     def print_vals(self):
         print("pid is " + self.pid)
