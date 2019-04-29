@@ -46,6 +46,9 @@ if __name__ == '__main__':
             second_run = True
             new_process = memory_process.Memory_Process(pid, pmem, at1, rt1, at2, rt2, second_run)
             memory_process_arr.append(new_process)
+            #making these new procs because with each algo we remove the procs from memory_process_arr
+            new_process2 = memory_process.Memory_Process(pid, pmem, at1, rt1, at2, rt2, second_run)
+            memory_process_arr_copy1.append(new_process2)
         else:
             pid = line_arr[0]
             pmem = int(line_arr[1])
@@ -55,6 +58,8 @@ if __name__ == '__main__':
             second_run = False
             new_process = memory_process.Memory_Process(pid, pmem, at1, rt1, None, None, second_run)
             memory_process_arr.append(new_process)
+            new_process2 = memory_process.Memory_Process(pid, pmem, at1, rt1, None, None, second_run)
+            memory_process_arr_copy1.append(new_process2)
         
     lines = math.ceil(tf/fpl)
     print(lines)
@@ -103,6 +108,8 @@ if __name__ == '__main__':
     #print(ff.reset_run(defragged, running, 0, 50))
     
     ff.run_ff(first_memory_table, memory_process_arr, fpl, tf, time_mem_move)
+    print("\n")
+    bf.run_bf(first_memory_table, memory_process_arr_copy1, fpl, tf, time_mem_move)
     
     #memory_table[start:end] = "A"
     
